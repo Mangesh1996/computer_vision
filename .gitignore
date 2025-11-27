@@ -40,3 +40,7 @@
 # debug information files
 *.dwo
 */.vscode
+*/*/*.jpg
+*/*/*.mp4
+*/*/*.avi
+*/*/*.png

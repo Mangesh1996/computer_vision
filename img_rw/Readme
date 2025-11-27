@@ -1,0 +1,3 @@
+## build command
+
+g++ *.cpp -o main.o `pkg-config --cflags --libs opencv4`
