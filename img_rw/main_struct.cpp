@@ -2,15 +2,17 @@
 #include <opencv2/opencv.hpp>
 #include <filesystem>
 #include <vector>
+#include <fstream>
 namespace fs=std::filesystem;
 
 
 struct ProcessingPipeline{
     std::string input_dir;
     std::string output_dir;
-
+    
     ProcessingPipeline(const std::string& in,const std::string& out):input_dir(in),output_dir(out){
         setupDirectories();
+        
     }
     void setupDirectories(){
         std::vector<std::string> dirs ={
@@ -22,25 +24,35 @@ struct ProcessingPipeline{
         };
         for(const auto& dir:dirs){
             if(fs::create_directories(dir)){
-                std::cout << "Created : "<< dir << std::endl;
+                 std::cout << "Created : "<< dir << std::endl;
             }
         }
     }
     void process(){
-        
+        std::ofstream log_file(output_dir+"/logs/logs.txt",std::ios::app);
+        if(!log_file.is_open()){
+            std::cerr << "Error : could not open log  file for wriging \n";
+            return ;
+        }
         for(const auto& entry:fs::directory_iterator(input_dir)){
             
-            if(entry.path().extension()==".jpg" | entry.path().extension()==".png" ){
-                processImage(entry.path());
+            if(entry.path().extension()==".jpg" || entry.path().extension()==".png" ){
+                processImage(entry.path(),log_file);
             }
+            
     }
+    log_file.close();
     }
-    void processImage(const fs::path& img_path){
+    void processImage(const fs::path& img_path,std::ofstream& log_file){
+                
         std::string filename=img_path.stem().string();
         cv::Mat img=cv::imread(img_path.string());
         
         if(img.empty()){
+                    std::ofstream log_file(output_dir+"/logs/logs.txt");
+
             std::cout << "faile to read image\n";
+            log_file << "faile to read image\n"  <<std::endl;
             return ;
         }
         
@@ -59,7 +71,8 @@ struct ProcessingPipeline{
         cv::resize(img,resized,cv::Size(640,480));
         cv::imwrite(output_dir+"/resized/"+filename+"_resized.jpg",resized);
         std::cout << "Processd : "<< filename <<std::endl;
-
+        log_file << "Processed : " << filename << std::endl;
+        
 
     }
 };
